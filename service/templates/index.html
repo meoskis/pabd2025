@@ -74,7 +74,12 @@
             })
             .then(response => response.json())
             .then(data => {
-                document.getElementById('response').innerText = 'Ответ сервера: ' + JSON.stringify(data);
+                if (data.status === 'success') {
+                    const roundedPrediction = parseFloat(data.prediction).toFixed(2);
+                    document.getElementById('response').innerText = 'Предсказанное значение цены: ' + roundedPrediction + ' ₽';
+                } else {
+                    document.getElementById('response').innerText = 'Ошибка: ' + data.message;
+                }
             })
             .catch(error => {
                 console.error('Ошибка:', error);
