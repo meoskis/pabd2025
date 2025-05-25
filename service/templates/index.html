@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Форма ввода чисел</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        
+        .form-container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Введите четыре параметра для предсказания стоимости квартиры</h2>
+        <form id="numberForm">
+            <input type="number" id="number_of_rooms" placeholder="Количество комнат" required>
+            <input type="number" id="area" placeholder="Площадь" required>
+            <input type="number" id="flat_floor" placeholder="Этаж квартиры" required>
+            <input type="number" id="total_floors" placeholder="Этажность дома" required>
+            <button type="button" onclick="submitForm()">Предсказать стоимость</button>
+        </form>
+        <div id="response"></div>
+    </div>
+
+    <script>
+        function submitForm() {
+            const number_of_rooms = document.getElementById('number_of_rooms').value;
+            const area = document.getElementById('area').value;
+            const flat_floor = document.getElementById('flat_floor').value;
+            const total_floors = document.getElementById('total_floors').value;
+
+            const data = {
+                number_of_rooms: number_of_rooms,
+                area: area,
+                flat_floor: flat_floor,
+                total_floors: total_floors
+            };
+
+            fetch('/api/numbers', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('response').innerText = 'Ответ сервера: ' + JSON.stringify(data);
+            })
+            .catch(error => {
+                console.error('Ошибка:', error);
+                document.getElementById('response').innerText = 'Произошла ошибка при отправке данных';
+            });
+        }
+    </script>
+</body>
+</head>
+</html>
