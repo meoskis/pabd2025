@@ -8,8 +8,7 @@ from logging.handlers import RotatingFileHandler
 import numpy as np
 import pandas as pd
 
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 
 import cianparser
@@ -148,7 +147,7 @@ def train_model(model_name:str, train_data_path="artifacts/train.csv"):
     X_train = train_data[["total_meters", "floor", "floors_count", "rooms_count"]]
     y_train = train_data["price"]
 
-    model = LinearRegression()
+    model = GradientBoostingRegressor()
     model.fit(X_train, y_train)
 
     model_path = f"models/{model_name}.pkl"
@@ -200,7 +199,7 @@ def main():
     )
     parser.add_argument("--model_name", type=str, required=True, help="Model name")
     parser.add_argument("--model_version", type=str, required=True, help="Model version")
-    parser.add_argument("--test_size", type=float, required=False, help="Test data proportion")
+    parser.add_argument("--test_size", type=float, required=True, help="Test data proportion")
 
     args = parser.parse_args()
     model_name = args.model_name
