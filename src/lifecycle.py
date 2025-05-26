@@ -63,7 +63,7 @@ def parse_cian():
     df.to_csv(csv_path, encoding="utf-8", index=False)
 
 
-def process_data():
+def process_data(test_size=0.2):
     data_path = "data/raw"
     all_raw_data_files = os.listdir(data_path)
     # Фильтруем только те, которые соответствуют шаблону
@@ -101,8 +101,8 @@ def process_data():
 
     logger.info(f"Объём данных после обработки: {len(df)} строк")
 
-    test_size = int(len(df["flat_id"]) * 0.2)
-    test_items = sorted(df["flat_id"])[-test_size:]
+    test_ammt = int(len(df["flat_id"]) * test_size)
+    test_items = sorted(df["flat_id"])[-test_ammt:]
 
     train_data = df[~df["flat_id"].isin(test_items)]
     test_data = df[df["flat_id"].isin(test_items)]
@@ -116,8 +116,7 @@ def train_model(model_name):
 
     train_data = pd.read_csv("artifacts/train.csv")
 
-
-    X_train = train_data[["total_meters"]]  # только один признак - площадь
+    X_train = train_data[["total_meters", "floor", "floors_count", "rooms_count"]]
     y_train = train_data["price"]
 
     model = LinearRegression()
@@ -130,10 +129,11 @@ def train_model(model_name):
 
 
 def test_model(model_name):
+
     test_data = pd.read_csv("artifacts/test.csv")
     model = joblib.load(f"models/{model_name}.pkl")
 
-    X_test = test_data[["total_meters"]]  # только один признак - площадь
+    X_test = test_data[["total_meters", "floor", "floors_count", "rooms_count"]]
     y_test = test_data["price"]
 
     y_pred = model.predict(X_test)
@@ -150,6 +150,7 @@ def test_model(model_name):
         f"Средняя ошибка предсказания: {np.mean(np.abs(y_test - y_pred)):.2f} рублей"
     )
 
+
 def main():
     global logger
     logger = setup_logger()
@@ -159,16 +160,19 @@ def main():
     parser = argparse.ArgumentParser(
         description="Обучение и сохранение модели предсказания цен на недвижимость."
     )
-    parser.add_argument("--mname", type=str, required=True, help="Model name")
-    parser.add_argument("--mversion", type=str, required=True, help="Model version")
+    parser.add_argument("--model_name", type=str, required=True, help="Model name")
+    parser.add_argument("--model_version", type=str, required=True, help="Model version")
+    parser.add_argument("--test_size", type=float, required=False, help="Test data proportion")
 
     args = parser.parse_args()
-    model_name = args.mname
-    model_version = args.mversion
-    model_name = f"{model_name}_model_{model_version}"
+    model_name = args.model_name
+    model_version = args.model_version
+    test_size = args.test_size
 
-    #parse_cian()
-    process_data()
+    model_name = f"{model_name}_model_v{model_version}"
+    parse_cian()
+    process_data(test_size)
+
     train_model(model_name)
     test_model(model_name)
 

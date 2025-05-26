@@ -23,7 +23,7 @@ app.logger.addHandler(file_handler)
 app.logger.setLevel(logging.INFO)
 # ==========================================================
 
-model = joblib.load('./models/linear_regression_model.pkl')
+model = joblib.load('./models/linear_model_v3.pkl')
 app.logger.info("Загружена ML-модель")
 
 # Маршрут для отображения формы
@@ -86,10 +86,13 @@ def process_numbers():
 
         app.logger.info(f"Данные успешно проверены: {numbers}")
         
+        number_of_rooms = float(data.get('number_of_rooms'))
         area = float(data.get('area'))
-        app.logger.info(f"Запуск предсказания для площади: {area} м²")
+        flat_floor = float(data.get('number_of_rooms'))
+        total_floors = float(data.get('total_floors'))
+        app.logger.info(f"Запуск предсказания для площади: {area} м²; кол-а комнат {number_of_rooms}; этажа {flat_floor}; общего числа этажей {total_floors}")
 
-        prediction = make_price_prediction([[area]])
+        prediction = make_price_prediction([[area, flat_floor, total_floors, number_of_rooms]])
         app.logger.info(f"Предсказание сделано: {prediction}")
         
         return jsonify({'status': 'success', 'prediction': float(prediction[0])})
