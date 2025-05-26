@@ -14,19 +14,24 @@ from sklearn.metrics import mean_squared_error, r2_score
 
 import cianparser
 
-from helpers import drop_outliers
-
-
 logger = None
 
+# Удаление выбросов
+def drop_outliers(df:pd.DataFrame, column:str) -> pd.DataFrame:
+    Q1 = df[column].quantile(0.25)
+    Q3 = df[column].quantile(0.75)
+    IQR = Q3 - Q1
+    lower_bound = Q1 - 3 * IQR
+    upper_bound = Q3 + 3 * IQR
+    return df[(df[column] > lower_bound) & (df[column] < upper_bound)]
 
+# Настройка логирования
 def setup_logger(log_path="logs/model.log"):
     os.makedirs(os.path.dirname(log_path), exist_ok=True)
 
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
 
-    # Проверяем, есть ли уже обработчики (чтобы не дублировать)
     if not logger.handlers:
         handler = RotatingFileHandler(
             log_path, maxBytes=5 * 1024 * 1024, backupCount=3, encoding="utf-8"
@@ -39,6 +44,12 @@ def setup_logger(log_path="logs/model.log"):
 
 
 def parse_cian():
+    """
+    Парсит данные с cian.ru для 1-3 комнатных квартир.
+        
+    Returns:
+        DataFrame с данными о квартирах
+    """
     moscow_parser = cianparser.CianParser(location="Москва")
     t = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M")
 
@@ -63,8 +74,17 @@ def parse_cian():
     df.to_csv(csv_path, encoding="utf-8", index=False)
 
 
-def process_data(test_size=0.2):
-    data_path = "data/raw"
+def process_data(test_size=0.2, data_path="data/raw"):
+    """
+    Очищает и подготавливает данные для обучения модели.
+
+    Args:
+        test_size: Относительный размер тестовой выборки
+        data_path: Путь до сырых данных
+    
+    Returns:
+        Очищенный DataFrame
+    """
     all_raw_data_files = os.listdir(data_path)
     # Фильтруем только те, которые соответствуют шаблону
     csv_files = [
@@ -112,9 +132,18 @@ def process_data(test_size=0.2):
     test_data.to_csv("artifacts/test.csv", index=False)
 
 
-def train_model(model_name):
-
-    train_data = pd.read_csv("artifacts/train.csv")
+def train_model(model_name:str, train_data_path="artifacts/train.csv"):
+    """
+    Обучает модель линейной регрессии на подготовленных данных.
+    
+    Args:
+        model_name: Название модели
+        train_data_path: Путь до обучающей выборки
+        
+    Returns:
+        Обученная модель LinearRegression
+    """
+    train_data = pd.read_csv(train_data_path)
 
     X_train = train_data[["total_meters", "floor", "floors_count", "rooms_count"]]
     y_train = train_data["price"]
@@ -128,9 +157,17 @@ def train_model(model_name):
     logger.info(f"Модель сохранена в файл {model_path}")
 
 
-def test_model(model_name):
-
-    test_data = pd.read_csv("artifacts/test.csv")
+def test_model(model_name:str, test_data_path="artifacts/test.csv"):
+    """
+    Тестирование модели.
+    
+    Args:
+        model_name: Название модели
+        
+    Returns:
+        Результаты тестирования модели
+    """
+    test_data = pd.read_csv(test_data_path)
     model = joblib.load(f"models/{model_name}.pkl")
 
     X_test = test_data[["total_meters", "floor", "floors_count", "rooms_count"]]
@@ -152,6 +189,7 @@ def test_model(model_name):
 
 
 def main():
+    """Основная функция для выполнения всего пайплайна."""
     global logger
     logger = setup_logger()
 
