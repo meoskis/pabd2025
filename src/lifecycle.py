@@ -74,22 +74,23 @@ def parse_cian():
     df.to_csv(csv_path, encoding="utf-8", index=False)
 
 
-def process_data(test_size=0.2, data_path="data/raw"):
+def process_data(test_size=0.2):
     """
     Очищает и подготавливает данные для обучения модели.
 
     Args:
         test_size: Относительный размер тестовой выборки
-        data_path: Путь до сырых данных
     
     Returns:
         Очищенный DataFrame
     """
+    data_path = "data/raw"
     all_raw_data_files = os.listdir(data_path)
     # Фильтруем только те, которые соответствуют шаблону
     csv_files = [
         f for f in all_raw_data_files if f.startswith("flats_") and f.endswith(".csv")
     ]
+    print(len(csv_files))
     # Чтение и объединение всех файлов
     df = pd.concat(
         [pd.read_csv(f"{data_path}/{f}") for f in csv_files], ignore_index=True
