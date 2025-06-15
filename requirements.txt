@@ -7,3 +7,4 @@ numpy
 ipykernel
 scikit-learn
 dvc
+pyyaml
