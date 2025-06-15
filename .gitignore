@@ -1,8 +1,10 @@
 .venv
-data
+data/raw
+data/processed
 .DS_Store
 *.pkl
 logs/
 *.log
 src/__pycache__
 artifacts/
+models/
