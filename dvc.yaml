@@ -1,28 +1,28 @@
 stages:
-  # parse_cian:
-  #   cmd: .venv/bin/python src/parse_cian.py
-  #   deps:
-  #     - src/parse_cian.py
-  #   outs:
-  #     - data/raw/
+  parse_cian:
+    cmd: python src/parse_cian.py
+    deps:
+    - src/parse_cian.py
+    outs:
+    - data/raw
   process_data:
     cmd: python src/process_data.py
     deps:
-      - src/process_data.py
-      - data/raw/
+    - data/raw
+    - src/process_data.py
     outs:
-      - data/processed/train.csv
-      - data/processed/test.csv
+    - data/processed/test.csv
+    - data/processed/train.csv
   train_model:
     cmd: python src/train_model.py
     deps:
-      - src/train_model.py
-      - data/processed/train.csv
+    - data/processed/train.csv
+    - src/train_model.py
     outs:
-      - models/
+    - models
   test_model:
     cmd: python src/test_model.py
     deps:
-      - src/test_model.py
-      - data/processed/test.csv
-      - models/
+    - data/processed/test.csv
+    - models
+    - src/test_model.py

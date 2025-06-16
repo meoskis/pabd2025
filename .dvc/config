@@ -1,0 +1,5 @@
+[core]
+    remote = storage
+['remote "storage"']
+    url = s3://pabd25/nikitakudryashov
+    endpointurl = https://storage.yandexcloud.net
